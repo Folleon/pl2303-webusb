@@ -1,8 +1,9 @@
 /*
  * Copyright for portions of usbserial are held by Andreas Gal (2017) as part
- * of pl2303. All other copyright for pl2303 are held by Tidepool Project (2018).
+ * of pl2303. Based on pl2303 by Tidepool Project (2018). Copyright of additional
+ * changes are held by Folleon GmbH.
  *
- * Prolific PL2303 user-space USB driver for Node.js
+ * Prolific PL2303 user-space USB driver for WebUSB.
  *
  * SPDX-License-Identifier: MIT
  */
