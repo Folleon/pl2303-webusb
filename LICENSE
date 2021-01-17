@@ -1,7 +1,8 @@
 MIT License
 
-Copyright for portions of usbserial are held by Andreas Gal (2017) as part 
+Copyright for portions of usbserial are held by Andreas Gal (2017) as part
 of pl2303. All other copyright for pl2303 are held by Tidepool Project (2018).
+All copyright for changes in pl2303-webusb are held by Folleon GmbH (2021).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
