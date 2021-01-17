@@ -2,7 +2,9 @@
 
 Prolific PL2303 user-space USB to serial adapter driver for [WebUSB](https://wicg.github.io/webusb/), working in the
 browser. Note that WebUSB [is experimental](https://developer.mozilla.org/en-US/docs/Web/API/USB#browser_compatibility)
-at the time of writing and only working in Chromium-based browsers. 
+at the time of writing and only working in Chromium-based browsers.
+
+**Note that the code of this repository is _just working_ at this time. Use this code at your own risk!**
 
 ## Usage
 
@@ -51,6 +53,8 @@ const readUntilSilent = async () => {
     }
   }
 }
-
 ```
 
+## Improvements
+
+Feel free to fork this repository, open issues or submit pull requests.
