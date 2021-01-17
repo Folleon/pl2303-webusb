@@ -13,11 +13,7 @@
     "type": "git",
     "url": "https://github.com/Folleon/pl2303-webusb"
   },
-  "dependencies": {
-    "assert": "^2.0.0",
-    "eventemitter3": "^4.0.7",
-    "usb": "1.6.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "prettier": "^2.2.1"
   }
