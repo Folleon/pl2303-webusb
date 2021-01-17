@@ -1,6 +1,6 @@
 {
   "name": "pl2303-webusb",
-  "version": "1.0.0-0",
+  "version": "1.0.0",
   "description": "Prolific PL2303 user-space USB to serial adapter driver based on pl2303, based on libusb",
   "main": "index.js",
   "scripts": {},
