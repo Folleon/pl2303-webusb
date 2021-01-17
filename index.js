@@ -12,14 +12,11 @@ import assert from "assert";
 import EventEmitter from "eventemitter3";
 
 function findDevices(vendorId, productId) {
-  return usb
-    .getDeviceList()
-    .filter(
-      (device) =>
-        device.deviceDescriptor.idVendor === vendorId &&
-        device.deviceDescriptor.idProduct === productId
-    );
+  return navigator.usb.requestDevice({ filters: [{ vendorId, productId }] });
 }
+
+const LIBUSB_TRANSFER_TYPE_BULK = 0x02;
+const LIBUSB_TRANSFER_TYPE_INTERRUPT = 0x03;
 
 const BAUD_RATES = [
   75,
@@ -116,63 +113,72 @@ function setBaudRate(device, baudRate) {
 }
 
 export default class UsbSerial extends EventEmitter {
-  constructor(opts) {
+  constructor(options) {
     super();
-    const port = opts.port || 0;
-    const bitrate = opts.baudRate || 9600;
-    const devices = findDevices(0x067b, 0x2303);
+    const port = options.port || 0;
+    const bitrate = options.baudRate || 9600;
+    const vendorId = options.vendorId || 0x067b;
+    const productId = options.productId || 0x2303;
+    const devices = findDevices(vendorId, productId);
     assert(devices.length > port);
-    const device = devices[port];
-    const descriptor = device.deviceDescriptor;
-    this.device = device;
-    assert(descriptor.bDeviceClass !== 0x02);
-    assert(descriptor.bMaxPacketSize0 === 0x40); // HX type
-    device.timeout = 100;
-    device.open();
-    assert(device.interfaces.length === 1);
-    [this.iface] = device.interfaces;
+    this.device = devices[port];
+    assert(this.device.deviceClass !== 0x02);
+    // assert(descriptor.bMaxPacketSize0 === 0x40); // HX type
+    // this.device.timeout = 100;
+    this.device.open();
+    assert(this.device.interfaces.length === 1);
+    [this.iface] = this.device.interfaces;
     this.iface.claim();
-    const intEp = findEndpoint(
+    const interfaceEndpoint = findEndpoint(
       this.iface,
-      usb.LIBUSB_TRANSFER_TYPE_INTERRUPT,
+      LIBUSB_TRANSFER_TYPE_INTERRUPT,
       "in"
     );
-    intEp.on("data", (data) => {
+    interfaceEndpoint.on("data", (data) => {
       this.emit("status", data);
     });
-    intEp.on("error", (err) => {
+    interfaceEndpoint.on("error", (err) => {
       this.emit("error", err);
     });
-    intEp.startPoll();
-    const inEp = findEndpoint(this.iface, usb.LIBUSB_TRANSFER_TYPE_BULK, "in");
-    inEp.on("data", (data) => {
+    interfaceEndpoint.startPoll();
+    const inEndpoint = findEndpoint(
+      this.iface,
+      LIBUSB_TRANSFER_TYPE_BULK,
+      "in"
+    );
+
+    inEndpoint.on("data", (data) => {
       this.emit("data", data);
     });
-    inEp.on("error", (err) => {
+
+    inEndpoint.on("error", (err) => {
       this.emit("error", err);
     });
-    const outEp = findEndpoint(
+
+    const outEndpoint = findEndpoint(
       this.iface,
-      usb.LIBUSB_TRANSFER_TYPE_BULK,
+      LIBUSB_TRANSFER_TYPE_BULK,
       "out"
     );
-    outEp.on("error", (err) => {
+
+    outEndpoint.on("error", (err) => {
       this.emit("error", err);
     });
-    this.outEp = outEp;
-    vendorRead(device, 0x8484, 0)
-      .then(() => vendorWrite(device, 0x0404, 0))
-      .then(() => vendorRead(device, 0x8484, 0))
-      .then(() => vendorRead(device, 0x8383, 0))
-      .then(() => vendorRead(device, 0x8484, 0))
-      .then(() => vendorWrite(device, 0x0404, 1))
-      .then(() => vendorRead(device, 0x8484, 0))
-      .then(() => vendorRead(device, 0x8383, 0))
-      .then(() => vendorWrite(device, 0, 1))
-      .then(() => vendorWrite(device, 1, 0))
-      .then(() => vendorWrite(device, 2, 0x44))
-      .then(() => setBaudRate(device, bitrate))
-      .then(() => inEp.startPoll())
+
+    this.outEndpoint = outEndpoint;
+    vendorRead(this.device, 0x8484, 0)
+      .then(() => vendorWrite(this.device, 0x0404, 0))
+      .then(() => vendorRead(this.device, 0x8484, 0))
+      .then(() => vendorRead(this.device, 0x8383, 0))
+      .then(() => vendorRead(this.device, 0x8484, 0))
+      .then(() => vendorWrite(this.device, 0x0404, 1))
+      .then(() => vendorRead(this.device, 0x8484, 0))
+      .then(() => vendorRead(this.device, 0x8383, 0))
+      .then(() => vendorWrite(this.device, 0, 1))
+      .then(() => vendorWrite(this.device, 1, 0))
+      .then(() => vendorWrite(this.device, 2, 0x44))
+      .then(() => setBaudRate(this.device, bitrate))
+      .then(() => inEndpoint.startPoll())
       .then(() => this.emit("ready"))
       .catch((err) => this.emit("error", err));
   }
@@ -187,6 +193,6 @@ export default class UsbSerial extends EventEmitter {
 
   send(data) {
     assert(data instanceof Buffer);
-    this.outEp.transfer(data);
+    this.outEndpoint.transfer(data);
   }
 }
