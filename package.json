@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {},
   "author": "René Bernhardsgrütter <rene@folleon.com>",
-  "contributors": [
-    "Andreas Gal"
-  ],
+  "contributors": [],
   "license": "MIT",
   "repository": {
     "type": "git",
