@@ -12,17 +12,17 @@ const assert = require("assert");
 const usb = require("usb");
 const EventEmitter = require("events");
 
-function findDevices(vid, pid) {
+function findDevices(vendorId, productId) {
   return usb
     .getDeviceList()
     .filter(
       (device) =>
-        device.deviceDescriptor.idVendor === vid &&
-        device.deviceDescriptor.idProduct === pid
+        device.deviceDescriptor.idVendor === vendorId &&
+        device.deviceDescriptor.idProduct === productId
     );
 }
 
-const SupportedBaudrates = [
+const BAUD_RATES = [
   75,
   150,
   300,
@@ -51,12 +51,12 @@ const SupportedBaudrates = [
 ];
 
 // find an endpoint of the given transfer type and direction
-function findEp(iface, transferType, direction) {
-  const eps = iface.endpoints.filter(
-    (e) => e.transferType === transferType && e.direction === direction
+function findEndpoint(iface, transferType, direction) {
+  const endpoints = iface.endpoints.filter(
+    (it) => it.transferType === transferType && it.direction === direction
   );
-  assert(eps.length === 1);
-  return eps[0];
+  assert(endpoints.length === 1);
+  return endpoints[0];
 }
 
 function controlTransfer(
@@ -95,11 +95,11 @@ function vendorWrite(device, value, index) {
   return controlTransfer(device, 0x40, 0x01, value, index, Buffer.alloc(0));
 }
 
-function setBaudrate(device, baud) {
-  assert(baud <= 115200);
+function setBaudRate(device, baudRate) {
+  assert(baudRate <= 115200);
   // find the nearest supported bitrate
-  const list = SupportedBaudrates.slice().sort(
-    (a, b) => Math.abs(a - baud) - Math.abs(b - baud)
+  const list = BAUD_RATES.slice().sort(
+    (a, b) => Math.abs(a - baudRate) - Math.abs(b - baudRate)
   );
   const newBaud = list[0];
   return controlTransfer(device, 0xa1, 0x21, 0, 0, 7)
@@ -133,7 +133,11 @@ class UsbSerial extends EventEmitter {
     assert(device.interfaces.length === 1);
     [this.iface] = device.interfaces;
     this.iface.claim();
-    const intEp = findEp(this.iface, usb.LIBUSB_TRANSFER_TYPE_INTERRUPT, "in");
+    const intEp = findEndpoint(
+      this.iface,
+      usb.LIBUSB_TRANSFER_TYPE_INTERRUPT,
+      "in"
+    );
     intEp.on("data", (data) => {
       this.emit("status", data);
     });
@@ -141,14 +145,18 @@ class UsbSerial extends EventEmitter {
       this.emit("error", err);
     });
     intEp.startPoll();
-    const inEp = findEp(this.iface, usb.LIBUSB_TRANSFER_TYPE_BULK, "in");
+    const inEp = findEndpoint(this.iface, usb.LIBUSB_TRANSFER_TYPE_BULK, "in");
     inEp.on("data", (data) => {
       this.emit("data", data);
     });
     inEp.on("error", (err) => {
       this.emit("error", err);
     });
-    const outEp = findEp(this.iface, usb.LIBUSB_TRANSFER_TYPE_BULK, "out");
+    const outEp = findEndpoint(
+      this.iface,
+      usb.LIBUSB_TRANSFER_TYPE_BULK,
+      "out"
+    );
     outEp.on("error", (err) => {
       this.emit("error", err);
     });
@@ -164,7 +172,7 @@ class UsbSerial extends EventEmitter {
       .then(() => vendorWrite(device, 0, 1))
       .then(() => vendorWrite(device, 1, 0))
       .then(() => vendorWrite(device, 2, 0x44))
-      .then(() => setBaudrate(device, bitrate))
+      .then(() => setBaudRate(device, bitrate))
       .then(() => inEp.startPoll())
       .then(() => this.emit("ready"))
       .catch((err) => this.emit("error", err));
@@ -183,5 +191,3 @@ class UsbSerial extends EventEmitter {
     this.outEp.transfer(data);
   }
 }
-
-module.exports = UsbSerial;
