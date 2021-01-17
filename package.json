@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "description": "Prolific PL2303 user-space USB to serial adapter driver based on pl2303, based on libusb",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "René Bernhardsgrütter <rene@folleon.com>",
   "contributors": [
     "Andreas Gal"
@@ -15,6 +14,8 @@
     "url": "https://github.com/Folleon/pl2303-webusb"
   },
   "dependencies": {
+    "assert": "^2.0.0",
+    "eventemitter3": "^4.0.7",
     "usb": "1.6.0"
   },
   "devDependencies": {
