@@ -1,27 +1,24 @@
 {
-  "name": "pl2303",
-  "version": "0.0.5",
-  "description": "Prolific PL2303 user-space USB to serial adapter driver based on libusb",
+  "name": "pl2303-webusb",
+  "version": "0.0.1",
+  "description": "Prolific PL2303 user-space USB to serial adapter driver based on pl2303, based on libusb",
   "main": "index.js",
-  "scripts": {
-    "lint": "eslint --cache --format=node_modules/eslint-formatter-pretty ."
-  },
-  "author": "Gerrit Niezen <gerrit@tidepool.org>",
-  "contributors": [
-    "Andreas Gal"
-  ],
+  "scripts": {},
+  "author": "René Bernhardsgrütter <rene@folleon.com>",
+  "contributors": [],
   "license": "MIT",
+  "keywords": [
+    "webusb",
+    "usb",
+    "prolific",
+    "pl2303"
+  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tidepool-org/pl2303"
+    "url": "https://github.com/Folleon/pl2303-webusb"
   },
-  "dependencies": {
-    "usb": "1.6.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "eslint": "4.19.1",
-    "eslint-config-airbnb-base": "13.0.0",
-    "eslint-formatter-pretty": "1.3.0",
-    "eslint-plugin-import": "2.13.0"
+    "prettier": "^2.2.1"
   }
 }
