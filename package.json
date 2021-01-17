@@ -7,6 +7,12 @@
   "author": "René Bernhardsgrütter <rene@folleon.com>",
   "contributors": [],
   "license": "MIT",
+  "keywords": [
+    "webusb",
+    "usb",
+    "prolific",
+    "pl2303"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Folleon/pl2303-webusb"
