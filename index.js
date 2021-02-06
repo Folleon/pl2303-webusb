@@ -17,8 +17,8 @@ export default class Pl2303WebUsbSerial {
 
   async connect(configuration = 1) {
     await this.device.open();
-    await this.device.selectConfiguration(configuration);
     await this.device.claimInterface(0);
+    await this.device.selectConfiguration(configuration);
 
     await this.vendorRead(0x8484, 0);
     await this.vendorWrite(0x0404, 0);
