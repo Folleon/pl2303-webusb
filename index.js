@@ -15,7 +15,7 @@ export default class Pl2303WebUsbSerial {
     this.device = device;
   }
 
-  async connect(configuration = 1) {
+  async connect(interfaceNumber = 0, configuration = 1, baudRate = 9600) {
     await this.device.open();
     await this.device.claimInterface(0);
     await this.device.selectConfiguration(configuration);
@@ -31,19 +31,52 @@ export default class Pl2303WebUsbSerial {
     await this.vendorWrite(0, 1);
     await this.vendorWrite(1, 0);
     await this.vendorWrite(2, 0x44);
+    await this.setBaudRate(baudRate);
     await this.vendorWrite(0x0, 0x0); // no flow control
     await this.vendorWrite(8, 0); // reset upstream data pipes
     await this.vendorWrite(9, 0);
+  }
+
+  async setBaudRate(baudRate) {
+    const currentConfiguration = await this.device.controlTransferIn(
+      {
+        recipient: "interface",
+        requestType: "class",
+        request: 0x21, // get configuration command
+        value: 0,
+        index: 0,
+      },
+      7 // read 7 bytes
+    );
+
+    const baudRateConfiguration = new DataView(
+      currentConfiguration.data.buffer
+    );
+    baudRateConfiguration.setInt32(0, baudRate, true); // baud rate, little-endian
+    baudRateConfiguration.setInt8(4, 0); // 1 stop bit
+    baudRateConfiguration.setInt8(5, 0); // no parity
+    baudRateConfiguration.setInt8(6, 8); // 8 bit characters
+
+    await this.device.controlTransferOut(
+      {
+        recipient: "interface",
+        requestType: "class",
+        request: 0x20, // configuration command
+        value: 0,
+        index: 0,
+      },
+      baudRateConfiguration.buffer
+    );
   }
 
   async vendorRead(value, index) {
     return this.device.controlTransferIn(
       {
         requestType: "vendor",
+        recipient: "device",
         request: 0x01,
         value,
         index,
-        recipient: "device",
       },
       1
     );
@@ -52,10 +85,10 @@ export default class Pl2303WebUsbSerial {
   async vendorWrite(value, index) {
     return this.device.controlTransferOut({
       requestType: "vendor",
+      recipient: "device",
       request: 0x01,
       value,
       index,
-      recipient: "device",
     });
   }
 
