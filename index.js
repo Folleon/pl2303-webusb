@@ -15,10 +15,12 @@ export default class Pl2303WebUsbSerial {
     this.device = device;
   }
 
-  async connect(interfaceNumber = 0, configuration = 1, baudRate = 9600) {
+  async connect(configuration = 1, baudRate = 9600) {
     await this.device.open();
-    await this.device.claimInterface(0);
     await this.device.selectConfiguration(configuration);
+    await this.device.claimInterface(
+      device.configuration.interfaces[0].interfaceNumber
+    );
 
     await this.vendorRead(0x8484, 0);
     await this.vendorWrite(0x0404, 0);
