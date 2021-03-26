@@ -19,7 +19,7 @@ export default class Pl2303WebUsbSerial {
     await this.device.open();
     await this.device.selectConfiguration(configuration);
     await this.device.claimInterface(
-      device.configuration.interfaces[0].interfaceNumber
+      this.device.configuration.interfaces[0].interfaceNumber
     );
 
     await this.vendorRead(0x8484, 0);
